@@ -7,8 +7,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/makl11/musiman/scanner"
+	"github.com/jmoiron/sqlx"
 	"github.com/spf13/cobra"
+
+	"github.com/makl11/musiman/context_keys"
+	"github.com/makl11/musiman/data"
+	"github.com/makl11/musiman/scanner"
 )
 
 var (
@@ -18,10 +22,14 @@ var (
 
 // scanCmd represents the scan command
 var scanCmd = &cobra.Command{
-	Use:   "scan [directory]",
-	Short: "Recursively scan a directory for music files (defaults to current directory if not specified)",
-	Args:  cobra.MaximumNArgs(1),
+	Use:     "scan [directory]",
+	Short:   "Recursively scan a directory for music files (defaults to current directory if not specified)",
+	Args:    cobra.MaximumNArgs(1),
+	PreRunE: data.InitDb,
 	Run: func(cmd *cobra.Command, args []string) {
+		db := cmd.Context().Value(context_keys.DB).(*sqlx.DB) // Never nil, InitDb returns error if it fails
+		defer db.Close()
+
 		dir := "."
 		if len(args) > 0 {
 			dir = args[0]
