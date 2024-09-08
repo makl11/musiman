@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/liamg/magic"
 )
@@ -35,6 +36,13 @@ func ScanDirForMusic(scanRoot string, minSize uint64, ignorePaths []string) erro
 	fileSystem := os.DirFS(scanRoot)
 	var buf []byte = make([]byte, 1024) // size recommended here: https://pkg.go.dev/github.com/liamg/magic#Lookup
 	return fs.WalkDir(fileSystem, ".", func(path string, entry fs.DirEntry, err error) error {
+		// check if path is in ignorePaths
+		for _, ignorePath := range ignorePaths {
+			if strings.HasPrefix(filepath.Clean(path), filepath.Clean(ignorePath)) {
+				return nil
+			}
+		}
+
 		if !entry.IsDir() {
 			fileInfo, err := fs.Stat(fileSystem, path)
 			if err != nil {
