@@ -4,3 +4,6 @@
 # build artifacts
 musiman
 musiman.exe
+
+# database files
+*.db
