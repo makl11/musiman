@@ -30,7 +30,9 @@ var MUSIC_FILE_TYPES = map[string]bool{
 	"iff":  true,
 }
 
-func ScanDirForMusic(scanRoot string) error {
+// TODO: skip files with size less than minSize
+// TODO: skip path if it matches any of the ignorePaths
+func ScanDirForMusic(scanRoot string, minSize uint64, ignorePaths []string) error {
 	fileSystem := os.DirFS(scanRoot)
 	var buf []byte = make([]byte, 1024) // size recommended here: https://pkg.go.dev/github.com/liamg/magic#Lookup
 	return fs.WalkDir(fileSystem, ".", func(path string, entry fs.DirEntry, err error) error {
