@@ -9,8 +9,8 @@ TBD
 
 ## Features
 - [x] recursively scan a directory for music files 
-- [ ] add minimum size filter to ignore tiny audio files from i.e. game sound effects
-- [ ] add path ignore patterns (exact relative paths for now)
+- [x] add minimum size filter to ignore tiny audio files from i.e. game sound effects
+- [x] add path ignore patterns (exact relative paths for now)
 - [ ] store music files in sqlite with calculated content hash (NOT acustid, just a hash)
 - [ ] decode audio files (mp3 only for now) to get raw audio
 - [ ] integrate [gochroma](https://github.com/go-fingerprint/gochroma) to get acustid (audio fingerprint)
