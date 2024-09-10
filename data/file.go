@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/jmoiron/sqlx"
@@ -61,6 +62,9 @@ func ValidateFile(file schema.File) error {
 	}
 	if _, ok := audio.MUSIC_FILE_TYPES[file.MediaType]; !ok {
 		return fmt.Errorf("%w: %w: unknown or unsupported media type: \"%s\"", ErrInvalidMediaType, ErrInvalidArgumentValue, file.MediaType)
+	}
+	if file.Mod.After(time.Now()) {
+		return fmt.Errorf("%w: %w: mod timestamp can not be in the future", ErrInvalidMod, ErrInvalidArgumentValue)
 	}
 
 	return nil
