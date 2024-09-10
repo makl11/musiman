@@ -38,7 +38,7 @@ func setupTestDB(t *testing.T) *sqlx.DB {
 var (
 	validHash     = []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA") // 64 bytes
 	validTestFile = schema.File{
-		Path:      "test.mp3",
+		Path:      "C:\\Music\\test.mp3",
 		Hash:      validHash,
 		MediaType: "mp3",
 		Size:      1024,

@@ -3,6 +3,7 @@ package data
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 	"unicode/utf8"
 
@@ -75,7 +76,7 @@ func ValidatePath(path string) error {
 	}
 
 	// Forbid problematic characters
-	if strings.ContainsAny(path, "*?:[]\"<>|(){}&'!\\;") {
+	if strings.ContainsAny(path, "*?[]\"<>|(){}&'!;") {
 		return errors.New("path contains problematic characters")
 	}
 
@@ -84,11 +85,21 @@ func ValidatePath(path string) error {
 		return errors.New("path starts with a tilde")
 	}
 
-	// TODO: Forbid "." and ".." as path elements
-	if strings.Contains(path, "/../") || strings.Contains(path, "/./") {
-		return errors.New("path contains \"/../\" or \"/./\"")
+	// Forbid "." and ".." as path elements
+	if strings.Contains(path, "/../") || strings.Contains(path, "/./") || strings.Contains(path, "\\..\\") || strings.Contains(path, "\\.\\") {
+		return errors.New("path contains \"..\" or \".\"")
 	}
-	// TODO: Forbid additional ":" after drive name in windows
+
+	// Forbid ":" except for after drive name in windows
+	if regexp.MustCompile("^[A-Za-z]:").MatchString(path) {
+		if strings.Contains(path[2:], ":") {
+			return errors.New("path contains \":\" after drive name")
+		}
+	} else {
+		if strings.Contains(path, ":") {
+			return errors.New("path contains \":\"")
+		}
+	}
 
 	return nil
 }
