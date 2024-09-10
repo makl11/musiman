@@ -1,7 +1,9 @@
 package data_test
 
 import (
+	"errors"
 	"os"
+	"reflect"
 	"testing"
 	"time"
 
@@ -34,12 +36,13 @@ func setupTestDB(t *testing.T) *sqlx.DB {
 }
 
 var (
+	validHash     = []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA") // 64 bytes
 	validTestFile = schema.File{
 		Path:      "test.mp3",
-		Hash:      make([]byte, 64),
+		Hash:      validHash,
 		MediaType: "mp3",
 		Size:      1024,
-		Mod:       time.Now().Format("ISO8601"),
+		Mod:       time.Now(),
 	}
 )
 
@@ -60,6 +63,45 @@ func TestSaveFileSuccess(t *testing.T) {
 
 	if count != 1 {
 		t.Errorf("expected 1 record, but got %d", count)
+	}
+}
+
+func withUnsetField[T any](obj *T, key string) T {
+	if reflect.ValueOf(obj).IsNil() {
+		panic("trying to unset a field on a nil element!")
+	}
+	if reflect.TypeOf(reflect.ValueOf(obj)).Kind() != reflect.Struct {
+		panic("trying to unset a field on an element that is not a structure!")
+	}
+	newObj := *obj
+	reflect.ValueOf(&newObj).Elem().FieldByName(key).SetZero()
+	return newObj
+}
+
+func TestSaveFileMissingFields(t *testing.T) {
+	testCases := []struct {
+		title       string
+		file        schema.File
+		expectedErr error
+	}{
+		{title: "Path", file: withUnsetField(&validTestFile, "Path"), expectedErr: data.ErrInvalidPath},
+		{title: "Hash", file: withUnsetField(&validTestFile, "Hash"), expectedErr: data.ErrInvalidHash},
+		{title: "MediaType", file: withUnsetField(&validTestFile, "MediaType"), expectedErr: data.ErrInvalidMediaType},
+		{title: "Size", file: withUnsetField(&validTestFile, "Size"), expectedErr: data.ErrInvalidSize},
+		{title: "Mod", file: withUnsetField(&validTestFile, "Mod"), expectedErr: data.ErrInvalidMod},
+	}
+
+	t.Parallel()
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			db := setupTestDB(t)
+			defer db.Close()
+
+			err := data.SaveFile(db, tc.file)
+			if !errors.Is(err, tc.expectedErr) {
+				t.Errorf("expected error %v, but got %v", tc.expectedErr, err)
+			}
+		})
 	}
 }
 
