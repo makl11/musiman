@@ -9,27 +9,9 @@ import (
 	"strings"
 
 	"github.com/liamg/magic"
-)
 
-var MUSIC_FILE_TYPES = map[string]bool{
-	// https://en.wikipedia.org/wiki/MP3
-	"mp3": true,
-	// https://en.wikipedia.org/wiki/Ogg
-	"ogg": true,
-	"oga": true,
-	// https://en.wikipedia.org/wiki/Windows_Media_Audio
-	"wma": true,
-	// https://en.wikipedia.org/wiki/Free_Lossless_Audio_Codec
-	"flac": true,
-	// https://en.wikipedia.org/wiki/Waveform_Audio_File_Format
-	"wav": true,
-	// https://en.wikipedia.org/wiki/Audio_Interchange_File_Format
-	"aiff": true,
-	"aif":  true,
-	"aifc": true,
-	"snd":  true,
-	"iff":  true,
-}
+	"github.com/makl11/musiman/audio"
+)
 
 // TODO: skip path if it matches any of the ignorePaths
 func ScanDirForMusic(scanRoot string, minSize uint64, ignorePaths []string) error {
@@ -81,7 +63,7 @@ func ScanDirForMusic(scanRoot string, minSize uint64, ignorePaths []string) erro
 				panic("filetype is nil")
 			}
 
-			if MUSIC_FILE_TYPES[fileType.Extension] {
+			if audio.MUSIC_FILE_TYPES[fileType.Extension] {
 				fmt.Print(filepath.Join(scanRoot, path), "\t\t")
 				if fileType.MIME != "" {
 					fmt.Printf("%s\t", fileType.MIME)
