@@ -147,3 +147,35 @@ func TestSaveFileInvalidPath(t *testing.T) {
 		})
 	}
 }
+
+func TestSaveFileInvalidHash(t *testing.T) {
+	fileWithHashToSmall := validTestFile
+	fileWithHashToSmall.Hash = make([]byte, 32)
+	fileWithHashToBig := validTestFile
+	fileWithHashToBig.Hash = make([]byte, 128)
+	fileWithHashZero := validTestFile
+	fileWithHashZero.Hash = make([]byte, 64) // all zeros
+
+	testCases := []struct {
+		title string
+		file  schema.File
+	}{
+		{title: "HashToSmall", file: fileWithHashToSmall},
+		{title: "HashToBig", file: fileWithHashToBig},
+		{title: "HashZero", file: fileWithHashZero},
+	}
+
+	t.Parallel()
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			db := setupTestDB(t)
+			defer db.Close()
+
+			err := data.SaveFile(db, tc.file)
+			if !errors.Is(err, data.ErrInvalidHash) {
+				t.Errorf("expected error %v, but got %v", data.ErrInvalidHash, err)
+			}
+		})
+	}
+}
+
