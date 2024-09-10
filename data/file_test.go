@@ -179,3 +179,29 @@ func TestSaveFileInvalidHash(t *testing.T) {
 	}
 }
 
+func TestSaveFileInvalidMediaType(t *testing.T) {
+	fileWithNonsenseMediaType := validTestFile
+	fileWithNonsenseMediaType.MediaType = "nonsense"
+	fileWithValidButUnsupportedMediaType := validTestFile
+	fileWithValidButUnsupportedMediaType.MediaType = "m4a"
+
+	testCases := []struct {
+		title string
+		file  schema.File
+	}{
+		{title: "NonsenseMediaType", file: fileWithNonsenseMediaType},
+		{title: "ValidButUnsupportedMediaType", file: fileWithValidButUnsupportedMediaType},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			db := setupTestDB(t)
+			defer db.Close()
+
+			err := data.SaveFile(db, tc.file)
+			if !errors.Is(err, data.ErrInvalidMediaType) {
+				t.Errorf("expected error %v, but got %v", data.ErrInvalidMediaType, err)
+			}
+		})
+	}
+}
