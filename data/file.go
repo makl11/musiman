@@ -9,6 +9,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
+	"github.com/makl11/musiman/audio"
 	"github.com/makl11/musiman/data/schema"
 )
 
@@ -57,6 +58,9 @@ func ValidateFile(file schema.File) error {
 	}
 	if isHashZero(file.Hash) {
 		return fmt.Errorf("%w: %w: files content hash must not be zero", ErrInvalidHash, ErrInvalidArgumentValue)
+	}
+	if _, ok := audio.MUSIC_FILE_TYPES[file.MediaType]; !ok {
+		return fmt.Errorf("%w: %w: unknown or unsupported media type: \"%s\"", ErrInvalidMediaType, ErrInvalidArgumentValue, file.MediaType)
 	}
 
 	return nil
