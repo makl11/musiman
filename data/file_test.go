@@ -119,3 +119,31 @@ func TestSaveFileDuplicatePath(t *testing.T) {
 		t.Error("expected an error, but got nil")
 	}
 }
+
+func TestSaveFileInvalidPath(t *testing.T) {
+	invalidTestFileWindows := validTestFile
+	invalidTestFileWindows.Path = "C:\\Windows\\Invalid:?Path"
+	invalidTestFileUnix := validTestFile
+	invalidTestFileUnix.Path = "/home/url/invalid:path"
+
+	testCases := []struct {
+		title string
+		file  schema.File
+	}{
+		{title: "InvalidWindowsPath", file: invalidTestFileWindows},
+		{title: "InvalidUnixPath", file: invalidTestFileUnix},
+	}
+
+	t.Parallel()
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			db := setupTestDB(t)
+			defer db.Close()
+
+			err := data.SaveFile(db, tc.file)
+			if !errors.Is(err, data.ErrInvalidPath) {
+				t.Errorf("expected error %v, but got %v", data.ErrInvalidPath, err)
+			}
+		})
+	}
+}
