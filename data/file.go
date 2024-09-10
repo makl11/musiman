@@ -3,6 +3,8 @@ package data
 import (
 	"errors"
 	"fmt"
+	"strings"
+	"unicode/utf8"
 
 	"github.com/jmoiron/sqlx"
 
@@ -45,5 +47,48 @@ func ValidateFile(file schema.File) error {
 	if file.Mod.IsZero() {
 		return fmt.Errorf("%w: %w: mod time must not be zero", ErrInvalidMod, ErrMissingArgumentValue)
 	}
+
+	if err := ValidatePath(file.Path); err != nil {
+		return fmt.Errorf("%w: %w: \"%s\" is not a valid file path: %w", ErrInvalidPath, ErrInvalidArgumentValue, file.Path, err)
+	}
+
+	return nil
+}
+
+// Based on: https://dwheeler.com/essays/fixing-unix-linux-filenames.html
+func ValidatePath(path string) error {
+	// Forbid ASCII control characters (bytes 1-31 and 127)
+	for _, r := range path {
+		if (r >= 0 && r <= 31) || r == 127 {
+			return errors.New("path contains ASCII control characters")
+		}
+	}
+
+	// Forbid leading "-"
+	if len(path) > 0 && path[0] == '-' {
+		return errors.New("path starts with a dash")
+	}
+
+	// Forbid filenames that aren’t a valid UTF-8 encoding
+	if !utf8.ValidString(path) {
+		return errors.New("path is not valid UTF-8")
+	}
+
+	// Forbid problematic characters
+	if strings.ContainsAny(path, "*?:[]\"<>|(){}&'!\\;") {
+		return errors.New("path contains problematic characters")
+	}
+
+	// Forbid leading "~"
+	if len(path) > 0 && path[0] == '~' {
+		return errors.New("path starts with a tilde")
+	}
+
+	// TODO: Forbid "." and ".." as path elements
+	if strings.Contains(path, "/../") || strings.Contains(path, "/./") {
+		return errors.New("path contains \"/../\" or \"/./\"")
+	}
+	// TODO: Forbid additional ":" after drive name in windows
+
 	return nil
 }
