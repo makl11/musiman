@@ -2,6 +2,7 @@ package data
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 
@@ -29,5 +30,20 @@ var (
 )
 
 func ValidateFile(file schema.File) error {
+	if file.Path == "" {
+		return fmt.Errorf("%w: %w: path must not be empty", ErrInvalidPath, ErrMissingArgumentValue)
+	}
+	if len(file.Hash) == 0 {
+		return fmt.Errorf("%w: %w: hash must not be empty", ErrInvalidHash, ErrMissingArgumentValue)
+	}
+	if file.MediaType == "" {
+		return fmt.Errorf("%w: %w: media type must not be empty", ErrInvalidMediaType, ErrMissingArgumentValue)
+	}
+	if file.Size == 0 {
+		return fmt.Errorf("%w: %w: size must not be zero", ErrInvalidSize, ErrMissingArgumentValue)
+	}
+	if file.Mod.IsZero() {
+		return fmt.Errorf("%w: %w: mod time must not be zero", ErrInvalidMod, ErrMissingArgumentValue)
+	}
 	return nil
 }
