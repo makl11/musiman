@@ -52,6 +52,12 @@ func ValidateFile(file schema.File) error {
 	if err := ValidatePath(file.Path); err != nil {
 		return fmt.Errorf("%w: %w: \"%s\" is not a valid file path: %w", ErrInvalidPath, ErrInvalidArgumentValue, file.Path, err)
 	}
+	if len(file.Hash) != schema.HASH_SIZE {
+		return fmt.Errorf("%w: %w: files content hash must consist of exactly %d bytes, but is %d bytes", ErrInvalidHash, ErrInvalidArgumentValue, schema.HASH_SIZE, len(file.Hash))
+	}
+	if isHashZero(file.Hash) {
+		return fmt.Errorf("%w: %w: files content hash must not be zero", ErrInvalidHash, ErrInvalidArgumentValue)
+	}
 
 	return nil
 }
@@ -102,4 +108,13 @@ func ValidatePath(path string) error {
 	}
 
 	return nil
+}
+
+func isHashZero(hash []byte) bool {
+	for _, b := range hash {
+		if b != 0 {
+			return false
+		}
+	}
+	return true
 }
