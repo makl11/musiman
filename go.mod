@@ -5,7 +5,7 @@ go 1.23.1
 require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/liamg/magic v0.0.1
-	github.com/mattn/go-sqlite3 v1.14.23
+	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 )
